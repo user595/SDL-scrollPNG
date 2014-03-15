@@ -88,6 +88,24 @@ SDL_Surface *screen_shift( SDL_Surface* source, int shift_x, int shift_y )
 
 }
 
+SDL_Surface *color_shift( SDL_Surface* source, int shift_color )
+{
+	SDL_Surface* shifted = source;
+
+	for (int y = 1; y < SCREEN_HEIGHT; y++ )
+	for (int x = 1; x < SCREEN_WIDTH; x++)
+	{
+		int pixel = get_pixel32( shifted, x, y ) + shift_color;
+		//if ( pixel < 0 || pixel > 255 ) pixel = 0;
+		put_pixel32( shifted, x, y, pixel );
+
+	}
+
+	return shifted;
+
+	SDL_FreeSurface( shifted );
+
+}
 
 void apply_surface( int x, int y, SDL_Surface* source, SDL_Surface* destination )
 {
@@ -189,7 +207,9 @@ int main( int argc, char* args[] )
 		//screen = screen_shift( screen, 1,0 );
 		//screen = screen_shift( screen, 0,1 );
 		//screen = screen_shift( screen, -1,0 );//negative numbers clear the screen
-		screen = screen_shift( screen, 1,1 );
+		//screen = screen_shift( screen, 1,1 );
+
+		screen = color_shift( screen, 1 );
 
 		//Update the screen
 		if( SDL_Flip( screen ) == -1 )
@@ -198,7 +218,7 @@ int main( int argc, char* args[] )
 		}
 
 		//Wait 2 seconds
-		SDL_Delay( 500 );//2000 milliseconds = 2 seconds
+		SDL_Delay( 1000 );//2000 milliseconds = 2 seconds
 
 
 

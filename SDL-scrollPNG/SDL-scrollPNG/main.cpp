@@ -15,6 +15,9 @@ const int SCREEN_BPP = 32;
 SDL_Surface *image = NULL;
 SDL_Surface *screen = NULL;
 
+//The event structure
+SDL_Event event;
+
 Uint32 get_pixel32( SDL_Surface *surface, int x, int y )
 {
     //Convert the pixels to 32 bit
@@ -58,18 +61,24 @@ SDL_Surface *load_image( std::string filename )
     return optimizedImage;
 }
 
-SDL_Surface *screen_shift( SDL_Surface* source )
+SDL_Surface *screen_shift( SDL_Surface* source, int shift_x, int shift_y )
 {
 	SDL_Surface* shifted = source;
 
-	for (int y = 100; y < 400; y++ )
-	for (int x = 100; x < 600; x++)
+	for (int y = 1; y < SCREEN_HEIGHT; y++ )
+	for (int x = 1; x < SCREEN_WIDTH; x++)
 	{
 		int pixel = get_pixel32( shifted, x, y );
 		int mod_x = x;
-		if (x > 100 && x < 600 )
-			mod_x = x - 99;
-		put_pixel32( shifted, mod_x, y, pixel );
+		int mod_y = y;
+		if (x > shift_x && x < (SCREEN_WIDTH) )
+			mod_x = x - shift_x;
+		if (y > shift_y && y < (SCREEN_HEIGHT) )
+			mod_y = y - shift_y;
+		if ( (mod_x < 0 || mod_x >= SCREEN_WIDTH) ||
+			(mod_y < 0 || mod_y >= SCREEN_WIDTH) )
+			continue;
+		put_pixel32( shifted, mod_x, mod_y, pixel );
 
 	}
 
@@ -146,7 +155,7 @@ int main( int argc, char* args[] )
     //Apply the surface to the screen
     apply_surface( 0, 0, image, screen );
 
-	screen = screen_shift( screen );
+	//screen = screen_shift( screen, 100,0 );
 
     //Update the screen
     if( SDL_Flip( screen ) == -1 )
@@ -155,7 +164,45 @@ int main( int argc, char* args[] )
     }
 
     //Wait 2 seconds
-    SDL_Delay( 200000 );//2000 milliseconds = 2 seconds
+    //SDL_Delay( 200000 );//2000 milliseconds = 2 seconds
+
+	//Quit flag
+    bool quit = false;
+
+    //While the user hasn't quit
+    while( quit == false )
+    {
+        //Start the frame timer
+        //fps.start();
+
+        //While there's events to handle
+        while( SDL_PollEvent( &event ) )
+        {
+            //If the user has Xed out the window
+            if( event.type == SDL_QUIT )
+            {
+                //Quit the program
+                quit = true;
+            }
+        }
+
+		//screen = screen_shift( screen, 1,0 );
+		//screen = screen_shift( screen, 0,1 );
+		//screen = screen_shift( screen, -1,0 );//negative numbers clear the screen
+		screen = screen_shift( screen, 1,1 );
+
+		//Update the screen
+		if( SDL_Flip( screen ) == -1 )
+		{
+			return 1;
+		}
+
+		//Wait 2 seconds
+		SDL_Delay( 500 );//2000 milliseconds = 2 seconds
+
+
+
+	}
 
     //Free the surface and quit SDL
     clean_up();
